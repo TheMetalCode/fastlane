@@ -231,6 +231,7 @@ module FastlaneCore
       end
 
       begin
+        puts "RUNNING COMMAND: #{command}"
         exit_status = FastlaneCore::FastlanePty.spawn(command) do |command_stdout, command_stdin, pid|
           command_stdout.each do |line|
             puts line.inspect
@@ -240,6 +241,7 @@ module FastlaneCore
           end
         end
       rescue => ex
+        puts "RESCUING ERROR"
         puts ex.inspect
         # FastlanePty adds exit_status on to StandardError so every error will have a status code
         exit_status = ex.exit_status
