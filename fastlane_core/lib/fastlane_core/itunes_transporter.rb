@@ -248,7 +248,7 @@ module FastlaneCore
         @errors << ex.to_s
       end
       puts exit_status.inspect
-      @errors << "The call to the altool completed with a non-zero exit status: #{exit_status}. This indicates a failure." unless exit_status.zero?
+      @errors << "The call to the altool completed with a non-zero exit status: #{exit_status}. This indicates a failure." unless exit_status&.zero?
 
       unless @errors.empty? || @all_lines.empty?
         # Print the last lines that appear after the last error from the logs
