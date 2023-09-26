@@ -56,9 +56,6 @@ module Fastlane
           temp_file = Tempfile.new
           api_key.write_key_to_file(temp_file.path)
 
-          # TEMPORARY, write key to a file that is actually easy to reference later
-          api_key.write_key_to_file("/Users/ec2-user/connect_api_key")
-
           auth_parts << "--key #{temp_file.path}"
           auth_parts << "--key-id #{api_key.key_id}"
           auth_parts << "--issuer #{api_key.issuer_id}"
