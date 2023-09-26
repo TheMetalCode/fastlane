@@ -38,11 +38,14 @@ module FastlaneCore
         end
       end
 
-      # if we get here and $?.exitstatus is nil, it means we exited early for mysterious reasons
+      # if we get here and $?.exitstatus is empty, it means we exited early for mysterious reasons
       # and we need raise an error that says as much.
-      if $?.exitstatus
+      puts $?.exitstatus.class
+      unless $?.exitstatus.empty?
+        puts "Returning exit status #{$?.exitstatus}"
         $?.exitstatus
       else
+        puts "exit status empty, raising error..."
         raise "The command #{command} exited early for reasons we are unable to diagnose!"
       end
     rescue LoadError
