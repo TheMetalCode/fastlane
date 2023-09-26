@@ -21,11 +21,9 @@ module FastlaneCore
   class FastlanePty
     def self.spawn(command)
       require 'pty'
-      output = nil
       PTY.spawn(command) do |command_stdout, command_stdin, pid|
         begin
           yield(command_stdout, command_stdin, pid)
-          output = command_stdout
         rescue Errno::EIO
           puts "Rescuing Errno::EIO..."
           # Exception ignored intentionally.
@@ -39,11 +37,18 @@ module FastlaneCore
           rescue Errno::ECHILD, PTY::ChildExited
             puts "Rescuing Errno::ECHILD or PTY::ChildExited..."
             # The process might have exited.
+          rescue StandardError => e
+            # could an error other than the above two happen here?
+            puts "Rescuing StandardError, raising FastlanePtyError..."
+            puts $?.exitstatus
+            # Wrapping any error in FastlanePtyError to allow
+            # callers to see and use $?.exitstatus that
+            # would usually get returned
+            raise FastlanePtyError.new(e, $?.exitstatus)
           end
         end
       end
       puts "No obvioius errors, returning exit status..."
-      puts output.read
       puts $?.exitstatus
       $?.exitstatus
     rescue LoadError

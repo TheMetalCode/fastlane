@@ -277,6 +277,7 @@ module FastlaneCore
     end
 
     def build_upload_command(username, password, source = "/tmp", provider_short_name = "", jwt = nil, platform = nil, api_key = nil)
+      # TODO: add --verbose based on option supplied to pilot action
       use_api_key = !api_key.nil?
       [
         ("API_PRIVATE_KEYS_DIR=#{api_key[:key_dir]}" if use_api_key),
