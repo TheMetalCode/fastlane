@@ -41,7 +41,7 @@ module FastlaneCore
       # if we get here and $?.exitstatus is empty, it means we exited early for mysterious reasons
       # and we need raise an error that says as much.
       puts $?.exitstatus.class
-      unless $?.exitstatus.empty?
+      if $?.exitstatus
         puts "Returning exit status #{$?.exitstatus}"
         $?.exitstatus
       else
