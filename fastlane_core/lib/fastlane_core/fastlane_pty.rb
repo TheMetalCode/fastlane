@@ -25,46 +25,36 @@ module FastlaneCore
         begin
           yield(command_stdout, command_stdin, pid)
         rescue Errno::EIO
-          puts "Rescuing Errno::EIO..."
           # Exception ignored intentionally.
           # https://stackoverflow.com/questions/10238298/ruby-on-linux-pty-goes-away-without-eof-raises-errnoeio
           # This is expected on some linux systems, that indicates that the subcommand finished
           # and we kept trying to read, ignore it
         ensure
           begin
-            puts "Waiting on process #{pid}..."
             Process.wait(pid)
           rescue Errno::ECHILD, PTY::ChildExited
-            puts "Rescuing Errno::ECHILD or PTY::ChildExited..."
             # The process might have exited.
-          rescue StandardError => e
-            # could an error other than the above two happen here?
-            puts "Rescuing StandardError, raising FastlanePtyError..."
-            puts $?.exitstatus
-            # Wrapping any error in FastlanePtyError to allow
-            # callers to see and use $?.exitstatus that
-            # would usually get returned
-            raise FastlanePtyError.new(e, $?.exitstatus)
           end
         end
       end
-      puts "No obvioius errors, returning exit status..."
-      puts $?.exitstatus
-      $?.exitstatus
+
+      # if we get here and $?.exitstatus is nil, it means we exited early for mysterious reasons
+      # and we need raise an error that says as much.
+      if $?.exitstatus
+        $?.exitstatus
+      else
+        raise "The command #{command} exited early for reasons we are unable to diagnose!"
+      end
     rescue LoadError
-      puts "Rescuing LoadError, retrying with Open3.popen3e..."
       require 'open3'
       Open3.popen2e(command) do |command_stdin, command_stdout, p| # note the inversion
         yield(command_stdout, command_stdin, p.value.pid)
 
         command_stdin.close
         command_stdout.close
-        puts p.value.exitstatus
         p.value.exitstatus
       end
     rescue StandardError => e
-      puts "Rescuing StandardError, raising FastlanePtyError..."
-      puts $?.exitstatus
       # Wrapping any error in FastlanePtyError to allow
       # callers to see and use $?.exitstatus that
       # would usually get returned
