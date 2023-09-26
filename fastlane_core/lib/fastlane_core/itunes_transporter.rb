@@ -286,7 +286,7 @@ module FastlaneCore
         platform_option(platform),
         file_upload_option(source),
         additional_upload_parameters,
-        "-k 100000 --verbose"
+        "-k 100000"
       ].compact.join(' ')
     end
 
