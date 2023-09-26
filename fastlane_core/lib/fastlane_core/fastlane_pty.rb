@@ -43,7 +43,7 @@ module FastlaneCore
         end
       end
       puts "No obvioius errors, returning exit status..."
-      puts output
+      puts output.read
       puts $?.exitstatus
       $?.exitstatus
     rescue LoadError
