@@ -21,9 +21,11 @@ module FastlaneCore
   class FastlanePty
     def self.spawn(command)
       require 'pty'
+      output = nil
       PTY.spawn(command) do |command_stdout, command_stdin, pid|
         begin
           yield(command_stdout, command_stdin, pid)
+          output = command_stdout
         rescue Errno::EIO
           puts "Rescuing Errno::EIO..."
           # Exception ignored intentionally.
@@ -32,6 +34,7 @@ module FastlaneCore
           # and we kept trying to read, ignore it
         ensure
           begin
+            puts "Waiting on process #{pid}..."
             Process.wait(pid)
           rescue Errno::ECHILD, PTY::ChildExited
             puts "Rescuing Errno::ECHILD or PTY::ChildExited..."
@@ -40,6 +43,7 @@ module FastlaneCore
         end
       end
       puts "No obvioius errors, returning exit status..."
+      puts output
       puts $?.exitstatus
       $?.exitstatus
     rescue LoadError
