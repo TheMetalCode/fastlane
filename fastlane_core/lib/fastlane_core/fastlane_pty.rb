@@ -38,16 +38,8 @@ module FastlaneCore
         end
       end
 
-      # if we get here and $?.exitstatus is empty, it means we exited early for mysterious reasons
-      # and we need raise an error that says as much.
-      puts $?.exitstatus.class
-      if $?.exitstatus
-        puts "Returning exit status #{$?.exitstatus}"
-        $?.exitstatus
-      else
-        puts "exit status empty, raising error..."
-        raise "The command #{command} exited early for reasons we are unable to diagnose!"
-      end
+      # if somehow $?.exitstatus is nil here, return -1 so it can be treated as an error
+      $?.exitstatus || -1
     rescue LoadError
       require 'open3'
       Open3.popen2e(command) do |command_stdin, command_stdout, p| # note the inversion
