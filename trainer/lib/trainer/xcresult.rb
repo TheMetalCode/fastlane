@@ -173,9 +173,15 @@ module Trainer
       end
 
       def find_failure(failures)
-        sanitizer = proc { |name| name.gsub(/\W/, "_") }
+        # Used to sanitize both test case name and identifier for reliable comparison
+        sanitizer = proc do |name|
+          name.gsub(/\W/, "_"). # replace all non-word characters with an underscore
+            gsub(/^_+/, ""). # remove leading underscores, generally a result of Swift Testing parameterized tests
+            gsub(/_+$/, "") # remove trailing underscores, generally a result of Swift Testing parameterized tests
+        end
         sanitized_identifier = sanitizer.call(self.identifier)
         if self.test_status == "Failure"
+          # puts ""
           # Tries to match failure on test case name
           # Example TestFailureIssueSummary:
           #   producingTarget: "TestThisDude"
@@ -186,10 +192,26 @@ module Trainer
           #     or identifier: "TestThisDude/testFailureJosh2" (when Objective-C)
 
           found_failure = failures.find do |failure|
-            # Sanitize both test case name and identifier in a consistent fashion, then replace all non-word
-            # chars with underscore, and compare them
             sanitized_test_case_name = sanitizer.call(failure.test_case_name)
-            sanitized_identifier == sanitized_test_case_name
+
+            # It's possible that identifier would be prefixed with group name for Swift Testing
+            # but also...do we need strict equality here, or just enough similarity?
+            # puts "identifier: #{self.identifier}"
+            # puts "sanitized_identifier:"
+            # puts sanitized_identifier
+            # # puts "test_case_name: #{failure.test_case_name}"
+            # puts "sanitized_test_case_name:"
+            # puts sanitized_test_case_name
+            # sanitized_identifier.end_with?(sanitized_test_case_name)
+            # puts sanitized_identifier == sanitized_test_case_name
+            # sanitized_identifier == sanitized_test_case_name
+            # puts failure.inspect
+            puts sanitized_identifier
+            puts sanitized_test_case_name
+            # puts sanitized_identifier == sanitized_test_case_name
+            sanitized_identifier == sanitized_test_case_name || sanitized_identifier.end_with?(sanitized_test_case_name)
+            # puts sanitized_identifier.end_with?(sanitized_test_case_name)
+            # sanitized_identifier.end_with?(sanitized_test_case_name)
           end
           return found_failure
         else

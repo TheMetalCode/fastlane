@@ -264,6 +264,11 @@ module Trainer
         # Used by store number of passes and failures by identifier
         # This is used when Xcode 13 (and up) retries tests
         # The identifier is duplicated until test succeeds or max count is reached
+
+        # HOWEVER: Swift Testing parameterized tests will show up as duplicate identifiers:
+        # eg. -[FastlaneTrainerSwiftTestingTests parameterizedExampleShouldFail(value:)]
+        # Treating those as retry attempts means no param test failures show up in the xml, which is bad:
+        # https://github.com/fastlane/fastlane/issues/29174
         tests_by_identifier = {}
 
         test_rows = all_tests.map do |test|
@@ -295,6 +300,8 @@ module Trainer
           # Set failure message if failure found
           failure = test.find_failure(failures)
           if failure
+            # puts "FAILED"
+            # puts failure.test_case_name
             test_row[:failures] = [{
               file_name: "",
               line_number: 0,
@@ -302,8 +309,9 @@ module Trainer
               performance_failure: {},
               failure_message: failure.failure_message
             }]
-
+            # puts info[:failure_count]
             info[:failure_count] += 1
+            # puts info[:failure_count]
           elsif test.test_status == "Skipped"
             test_row[:skipped] = true
             info[:skip_count] += 1
@@ -394,6 +402,7 @@ module Trainer
               guid: current_test["TestSummaryGUID"],
               duration: current_test["Duration"]
             }
+
             if current_test["FailureSummaries"]
               current_row[:failures] = current_test["FailureSummaries"].collect do |current_failure|
                 {
